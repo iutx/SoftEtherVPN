@@ -26,4 +26,4 @@ VOLUME ["/opt/vpnserver/server_log/", "/opt/vpnserver/packet_log/", "/opt/vpnser
 
 EXPOSE 500/udp 4500/udp 1701/tcp 1194/udp 5555/tcp 443/tcp
 
-CMD ["./vpnserver", "start"]
+CMD ["./vpnserver", "execsvc"]
