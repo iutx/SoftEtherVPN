@@ -1,0 +1,70 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: vpn
+  namespace: devops
+spec:
+  selector:
+   matchLabels:
+     app: softether-vpnserver
+  template:
+    metadata:
+      labels:
+        app: softether-vpnserver
+    spec:
+      containers:
+      - name: softether-vpn-alpine
+        image: abyssviper/softethervpn
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 5555
+          name: connect
+          protocol: TCP
+        livenessProbe:
+          tcpSocket:
+            port: 5555
+          initialDelaySeconds: 60
+          timeoutSeconds: 5
+          failureThreshold: 12
+        readinessProbe:
+          tcpSocket:
+            port: 5555
+        resources:
+          limits:
+            cpu: 1000m
+            memory: 200Mi
+          requests:
+            cpu: 500m
+            memory: 100Mi
+        volumeMounts:
+        - name: softether-vpn-storge
+          subPath: softethervpn/vpn_server.config
+          mountPath: /opt/vpnserver/vpn_server.config
+        - name: softether-vpn-storge
+          subPath: softethervpn/server_log
+          mountPath: /opt/vpnserver/server_log
+        - name: softether-vpn-storge
+          subPath: softethervpn/packet_log
+          mountPath: /opt/vpnserver/packet_log
+        - name: softether-vpn-storge
+          subPath: softethervpn/security_log
+          mountPath: /opt/vpnserver/security_log
+      volumes:
+      - name: softether-vpn-storge
+        persistentVolumeClaim:
+          claimName: vpn-pvc
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: vpn
+  namespace: devops
+spec:
+  selector:
+    app: softether-vpnserver
+  type: NodePort
+  ports:
+  - name: connect
+    port: 5555
+    nodePort: 30003
+
